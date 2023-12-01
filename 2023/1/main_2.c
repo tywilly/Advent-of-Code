@@ -56,6 +56,19 @@ void addLink(LinkList *list, int number) {
   newLink->number = number;
 }
 
+char digitString[9][6] = {"one", "two",   "three", "four", "five",
+                          "six", "seven", "eight", "nine"};
+
+int findNumber(const char *str) {
+  for (int i = 0; i < 9; i++) {
+
+    if (strstr(str, digitString[i]) == str) {
+        return i+1;
+    }
+  }
+  return -1;
+}
+
 int main() {
 
   FILE *inputFile = fopen("input.txt", "r");
@@ -63,36 +76,57 @@ int main() {
   char *inputLine = NULL;
   size_t lineLen = 0;
   size_t lineSize = 0;
+  int lineNum = 0;
 
   LinkList *numList = newList();
 
   do { // Loop through input until we see "done"
 
     lineSize = getline(&inputLine, &lineLen, inputFile);
+    lineNum++;
 
     int firstNumIndex = -1;
+    int firstNum = 0;
     int lastNumIndex = -1;
+    int lastNum = 0;
 
     for (int i = 0; i < lineSize; i++) { // Loop through the current line
       char *c = inputLine + i;
 
-      int num = atoi(c);
+      int num;
+      num = findNumber(c);
+      if(num != -1){
+          if(firstNumIndex == -1){
+            firstNumIndex = i;
+            firstNum = num;
+          }
 
+          if(lastNumIndex < i){
+            lastNumIndex = i;
+            lastNum = num;
+          }
+
+      }
+
+      char singleChar[2];
+      memcpy(singleChar, c, 1);
+      num = atoi(singleChar);
       if (num != 0) { // If the string to int conversion succeeds
         if (firstNumIndex == -1) {
           firstNumIndex = i;
+          firstNum = num;
         }
 
         if (lastNumIndex < i) {
           lastNumIndex = i;
+          lastNum = num;
         }
       }
     }
 
-    char newNumStr[2];
-    newNumStr[0] = inputLine[firstNumIndex];
-    newNumStr[1] = inputLine[lastNumIndex];
-    int newNum = atoi(newNumStr);
+    int newNum = (firstNum * 10) + lastNum;
+
+    printf("%i: %i\n", lineNum, newNum);
 
     addLink(numList, newNum);
   } while (strcmp(inputLine, "done\n") != 0);
@@ -105,7 +139,7 @@ int main() {
     currLink = currLink->next;
   }
 
-  printf("%i\n", sumOfNumbers);
+  printf("Ans: %i\n", sumOfNumbers);
 
   freeList(numList);
 
